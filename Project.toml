@@ -10,7 +10,7 @@ PropertyDicts = "f8a19df8-e894-5f55-a973-672c1158cbca"
 [compat]
 DataAPI = "1.11"
 PropertyDicts = "0.2"
-julia = "1"
+julia = "1.6"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
