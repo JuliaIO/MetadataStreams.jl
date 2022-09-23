@@ -15,9 +15,10 @@ export
 @nospecialize
 
 """
-    MetadataStream(io, meta)
+    MetadataStream(stream, metadata::AbstractDict)
 
-Type for storing metadata alongside subtypes of `IO`.
+A subtype of `IO` for storing metadata alongside an IO stream. Interaction with metadata
+is supported
 """
 struct MetadataStream{S<:IO,M<:PropertyDict} <: IO
     stream::S
@@ -35,10 +36,10 @@ end
 function DataAPI.metadata(ms::MetadataStream, key::Symbol; style::Bool=false)
     style ? getproperty(getfield(ms, :metadata), key) : getfield(getproperty(getfield(ms, :metadata), key), 1)
 end
-function DataAPI.metadata!(ms::MetadataStream, key::AbstractString; style=nothing)
+function DataAPI.metadata!(ms::MetadataStream, key::AbstractString, val; style=nothing)
     setproperty!(getfield(ms, :metadata), key, (val, style))
 end
-function DataAPI.metadata!(ms::MetadataStream, key::Symbol; style=nothing)
+function DataAPI.metadata!(ms::MetadataStream, key::Symbol, val; style=nothing)
     setproperty!(getfield(ms, :metadata), key, (val, style))
 end
 function DataAPI.deletemetadata!(ms::MetadataStream, key::Symbol)
@@ -51,14 +52,13 @@ DataAPI.emptymetadata!(ms::MetadataStream) = empty!(getfield(ms, :metadata))
 DataAPI.metadatakeys(ms::MetadataStream) = keys(getfield(ms, :metadata))
 #endregion
 
-#region show methods
+#region IOContext support
 Base.in(p::Pair, ms::MetadataStream) = in(p, getfield(ms, :stream))
-Base.haskey(io::IO, key) = false
-Base.getindex(io::IOContext, key) = getindex(io.dict, key)
+Base.haskey(ms::MetadataStream, key) = haskey(getfield(ms, :stream), key)
+Base.getindex(ms::MetadataStream, key) = getindex(getfield(ms, :stream), key)
 Base.get(ms::MetadataStream, key, default) = get(getfield(ms, :stream), key, default)
-Base.keys(ms::MetadataStream) = keys(ImmutableDict{Symbol,Any}())
+Base.keys(ms::MetadataStream) = keys(getfield(ms, :stream))
 #endregion
-
 
 #region IO interface
 Base.isreadonly(ms::MetadataStream) = isreadonly(getfield(ms, :stream))

@@ -1,35 +1,34 @@
 using MetadataStreams
 using Test
 
-@testset "MetadataStreams.jl" begin
-    # Write your tests here.
+# Write your tests here.
 
-    io = IOBuffer()
-    #ms = Metadata.test_wrapper(MetadataStream, io)
-    m = Dict{Symbol,Tuple{Any,Any}}()
-    ms = MetadataStream(IOBuffer(), m)
+io = IOBuffer()
+#ms = Metadata.test_wrapper(MetadataStream, io)
+m = Dict{Symbol,Tuple{Any,Any}}()
+ms = MetadataStream(IOBuffer(), m)
 
+@testset "metadata interface" begin
     @test isempty(metadatakeys(ms))
+
     m[:m1] = (1,nothing)
-    @test metadata(ms, :m1) == 1
+    @test metadata(ms, :m1) == 1 == metadata(ms, "m1")
 
-    #=
-    y = share_metadata(x, ones(2, 2))
-    @test y isa Metadata.MetaArray
-    @test metadata(x) === metadata(y)
+    metadata!(ms, :m2, 2)
+    metadata!(ms, "m1", 2)
 
-    y = copy_metadata(x, ones(2, 2))
-    @test y isa Metadata.MetaArray
-    @test metadata(x) == metadata(y)
-    @test metadata(x) !== metadata(y)
+    @test metadata(ms, "m2") == metadata(ms, :m2)
 
-    y = drop_metadata(x)
-    @test !has_metadata(y)
-    @test y == data
-    =#
+    deletemetadata!(ms, :m2)
+    deletemetadata!(ms, "m1")
+    @test !haskey(m, :m1)
+    @test !haskey(m, :m2)
 
-    empty!(m)
+    emptymetadata!(ms)
+    @test isempty(m)
+end
 
+@testset "IO Interface" begin
     @test position(ms) == 0
     @test !isreadonly(ms)
     @test isreadable(ms)
@@ -65,4 +64,11 @@ using Test
     @test !isopen(ms)
 end
 
-#If I understand correctly, we don't actually require that the underlying value associated with each key be physically stored as `Tuple{Any,Any}`. It can just
+@testset "IOContext support" begin
+    ms = MetadataStream(IOContext(IOBuffer(), :compact => true, :limit => true), m)
+    @test in(:compact => true, ms)
+    @test haskey(ms, :limit)
+    @test ms[:limit]
+    @test get(ms, :limit, nothing)
+    @test in(:compact, keys(ms))
+end
