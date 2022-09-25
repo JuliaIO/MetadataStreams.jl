@@ -10,20 +10,11 @@ ms = MetadataStream(IOBuffer(), m)
 
 @testset "metadata interface" begin
     @test isempty(metadatakeys(ms))
-
     m[:m1] = (1,nothing)
-    @test metadata(ms, :m1) == 1 == metadata(ms, "m1")
-
+    @test metadata(ms, :m1) == 1
     metadata!(ms, :m2, 2)
-    metadata!(ms, "m1", 2)
-
-    @test metadata(ms, "m2") == metadata(ms, :m2)
-
     deletemetadata!(ms, :m2)
-    deletemetadata!(ms, "m1")
-    @test !haskey(m, :m1)
     @test !haskey(m, :m2)
-
     emptymetadata!(ms)
     @test isempty(m)
 end
@@ -66,7 +57,6 @@ end
 
 @testset "IOContext support" begin
     ms = MetadataStream(IOContext(IOBuffer(), :compact => true, :limit => true), m)
-    @test in(:compact => true, ms)
     @test haskey(ms, :limit)
     @test ms[:limit]
     @test get(ms, :limit, nothing)

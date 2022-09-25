@@ -5,11 +5,9 @@ version = "0.1.0"
 
 [deps]
 DataAPI = "9a962f9c-6df0-11e9-0e5d-c546b8b5ee8a"
-PropertyDicts = "f8a19df8-e894-5f55-a973-672c1158cbca"
 
 [compat]
 DataAPI = "1.11"
-PropertyDicts = "0.2"
 julia = "1.6"
 
 [extras]
